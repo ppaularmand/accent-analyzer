@@ -1,7 +1,9 @@
 import streamlit as st
 import random
 import time
-import subprocess  # Import the subprocess module
+import subprocess
+import sys
+import os
 
 st.set_page_config(page_title="English Accent Analyzer (Simplified)", page_icon="🎙️")
 
@@ -33,34 +35,35 @@ if st.button("Analyze Accent", type="primary"):
             # Simulate processing time
             time.sleep(3)
             try:
+                # Get the absolute path to accent_analyzer.py
+                analyzer_path = os.path.abspath("accent_analyzer.py")
+                print(f"Running analyzer script: {analyzer_path}")
+
                 # Call the accent_analyzer.py script using subprocess
                 result = subprocess.run(
-                    ["python", "accent_analyzer.py", video_url],  # Pass the URL
+                    [sys.executable, analyzer_path, video_url],
                     capture_output=True,
                     text=True,
-                    check=True  # Will raise an error if the script fails
+                    check=True
                 )
                 # Extract the output from the subprocess
                 output = result.stdout
-                print(output)
+                error_output = result.stderr
+                print(f"Script output: {output}")
+                print(f"Script error output: {error_output}")
 
-                # Parse the output to get the result.  This is a placeholder
-                #  The actual parsing will depend on how your accent_analyzer.py
-                #  script formats its output.  It should ideally be JSON.
-                #  For now, I'll assume it prints the accent on the first line
-                #  and the confidence on the second.
                 lines = output.strip().split('\n')
                 if len(lines) >= 2:
                     accent = lines[0].split(':')[-1].strip()
-                    confidence_str = lines[1].split(':')[-1].strip().replace('%','')
+                    confidence_str = lines[1].split(':')[-1].strip().replace('%', '')
                     confidence = float(confidence_str)
                 else:
                     accent = "Unknown"
                     confidence = 0
 
-                explanation = "Simulated accent analysis." # Add a placeholder
+                explanation = "Simulated accent analysis."  # Add a placeholder
                 all_scores = {a: round(random.uniform(5, 30), 2) for a in ACCENT_CLASSES}
-                all_scores[accent] = round(confidence,2)
+                all_scores[accent] = round(confidence, 2)
 
             except subprocess.CalledProcessError as e:
                 # Handle errors from the accent_analyzer.py script
